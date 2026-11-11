@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QZ7 Discord</title>
+<title>DxqqK</title>
 
 <style>
 * {
@@ -83,9 +83,9 @@ body {
 }
 
 .logo {
-  font-size: 34px;
+  font-size: 36px;
   font-weight: 800;
-  letter-spacing: 5px;
+  letter-spacing: 4px;
   margin-bottom: 8px;
   background: linear-gradient(120deg, white, #a77aff);
   -webkit-background-clip: text;
@@ -102,7 +102,7 @@ body {
 .stats {
   display: flex;
   justify-content: center;
-  gap: 18px;
+  gap: 16px;
   margin-bottom: 32px;
   flex-wrap: wrap;
 }
@@ -168,12 +168,6 @@ a.join-btn:active {
 #message.show {
   opacity: 1;
 }
-
-.error {
-  color: #ff6b6b;
-  font-size: 13px;
-  margin-top: 12px;
-}
 </style>
 </head>
 
@@ -189,8 +183,8 @@ a.join-btn:active {
 </div>
 
 <main class="content" id="content">
-  <div class="logo">QZ7</div>
-  <div class="server-name" id="serverName">Loading server...</div>
+  <div class="logo">DxqqK</div>
+  <div class="server-name" id="serverName">Discord Server</div>
 
   <div class="stats">
     <div class="stat total">
@@ -220,22 +214,20 @@ const DISCORD_URL = `https://discord.com/api/v9/invites/${INVITE_CODE}?with_coun
 
 async function fetchDiscordStats() {
   try {
-    // ลองดึงตรงก่อน
     let res = await fetch(DISCORD_URL, { mode: "cors" });
     
-    // ถ้า CORS บล็อก ใช้ proxy สำรอง
     if (!res.ok) {
       res = await fetch(`https://corsproxy.io/?${encodeURIComponent(DISCORD_URL)}`);
     }
     
-    if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลได้");
+    if (!res.ok) throw new Error("fetch failed");
     
     const data = await res.json();
     
     const total = data.approximate_member_count || data.profile?.member_count || 0;
     const online = data.approximate_presence_count || data.profile?.online_count || 0;
     const offline = Math.max(0, total - online);
-    const name = data.guild?.name || data.profile?.name || "Discord Server";
+    const name = data.guild?.name || data.profile?.name || "DxqqK";
 
     document.getElementById("serverName").textContent = name;
     document.getElementById("totalMembers").textContent = total.toLocaleString();
@@ -249,7 +241,7 @@ async function fetchDiscordStats() {
     document.getElementById("offlineMembers").textContent = "17";
     
     const msg = document.getElementById("message");
-    msg.textContent = "แสดงข้อมูลล่าสุด (อาจไม่ real-time)";
+    msg.textContent = "แสดงข้อมูลล่าสุด";
     msg.classList.add("show");
   }
 }
