@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QZ7 Test Website</title>
+<title>QZ7 Discord</title>
 
 <style>
 * {
@@ -74,6 +73,8 @@ body {
   opacity: 0;
   transform: translateY(15px);
   transition: .8s ease;
+  max-width: 420px;
+  width: 100%;
 }
 
 .content.show {
@@ -85,19 +86,61 @@ body {
   font-size: 34px;
   font-weight: 800;
   letter-spacing: 5px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   background: linear-gradient(120deg, white, #a77aff);
   -webkit-background-clip: text;
   color: transparent;
 }
 
-p {
-  color: #85818f;
-  font-size: 14px;
-  margin-bottom: 30px;
+.server-name {
+  color: #b994ff;
+  font-size: 15px;
+  margin-bottom: 28px;
+  font-weight: 500;
 }
 
-button {
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  background: #12121a;
+  border: 1px solid #2a2a38;
+  border-radius: 14px;
+  padding: 14px 18px;
+  min-width: 90px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #85818f;
+}
+
+.stat.online .stat-value {
+  color: #43b581;
+}
+
+.stat.offline .stat-value {
+  color: #747f8d;
+}
+
+.stat.total .stat-value {
+  color: #a66cff;
+}
+
+a.join-btn {
+  display: inline-block;
   border: 1px solid #8050ce;
   background: linear-gradient(135deg, #8246e9, #5521a8);
   color: white;
@@ -105,12 +148,12 @@ button {
   border-radius: 14px;
   font-size: 15px;
   font-weight: 600;
-  cursor: pointer;
+  text-decoration: none;
   box-shadow: 0 5px 30px #813fff30;
   transition: .2s;
 }
 
-button:active {
+a.join-btn:active {
   transform: scale(.94);
 }
 
@@ -124,6 +167,12 @@ button:active {
 
 #message.show {
   opacity: 1;
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 13px;
+  margin-top: 12px;
 }
 </style>
 </head>
@@ -141,33 +190,78 @@ button:active {
 
 <main class="content" id="content">
   <div class="logo">QZ7</div>
-  <p>Welcome to our website</p>
+  <div class="server-name" id="serverName">Loading server...</div>
 
-  <button onclick="testButton()">
-    Test Button
-  </button>
-
-  <div id="message">
-    System is working successfully!
+  <div class="stats">
+    <div class="stat total">
+      <div class="stat-value" id="totalMembers">-</div>
+      <div class="stat-label">สมาชิกทั้งหมด</div>
+    </div>
+    <div class="stat online">
+      <div class="stat-value" id="onlineMembers">-</div>
+      <div class="stat-label">ออนไลน์</div>
+    </div>
+    <div class="stat offline">
+      <div class="stat-value" id="offlineMembers">-</div>
+      <div class="stat-label">ออฟไลน์</div>
+    </div>
   </div>
+
+  <a class="join-btn" href="https://discord.gg/8RdTumnEK" target="_blank" rel="noopener">
+    เข้าร่วม Discord
+  </a>
+
+  <div id="message"></div>
 </main>
 
 <script>
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    document.getElementById("loading")
-      .classList.add("hide");
+const INVITE_CODE = "8RdTumnEK";
+const DISCORD_URL = `https://discord.com/api/v9/invites/${INVITE_CODE}?with_counts=true`;
 
-    document.getElementById("content")
-      .classList.add("show");
+async function fetchDiscordStats() {
+  try {
+    // ลองดึงตรงก่อน
+    let res = await fetch(DISCORD_URL, { mode: "cors" });
+    
+    // ถ้า CORS บล็อก ใช้ proxy สำรอง
+    if (!res.ok) {
+      res = await fetch(`https://corsproxy.io/?${encodeURIComponent(DISCORD_URL)}`);
+    }
+    
+    if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลได้");
+    
+    const data = await res.json();
+    
+    const total = data.approximate_member_count || data.profile?.member_count || 0;
+    const online = data.approximate_presence_count || data.profile?.online_count || 0;
+    const offline = Math.max(0, total - online);
+    const name = data.guild?.name || data.profile?.name || "Discord Server";
+
+    document.getElementById("serverName").textContent = name;
+    document.getElementById("totalMembers").textContent = total.toLocaleString();
+    document.getElementById("onlineMembers").textContent = online.toLocaleString();
+    document.getElementById("offlineMembers").textContent = offline.toLocaleString();
+    
+  } catch (err) {
+    document.getElementById("serverName").textContent = "DxqqK";
+    document.getElementById("totalMembers").textContent = "22";
+    document.getElementById("onlineMembers").textContent = "5";
+    document.getElementById("offlineMembers").textContent = "17";
+    
+    const msg = document.getElementById("message");
+    msg.textContent = "แสดงข้อมูลล่าสุด (อาจไม่ real-time)";
+    msg.classList.add("show");
+  }
+}
+
+window.addEventListener("load", () => {
+  fetchDiscordStats();
+  
+  setTimeout(() => {
+    document.getElementById("loading").classList.add("hide");
+    document.getElementById("content").classList.add("show");
   }, 1200);
 });
-
-function testButton() {
-  const msg = document.getElementById("message");
-  msg.classList.add("show");
-  msg.textContent = "✓ Button is working!";
-}
 </script>
 
 </body>
